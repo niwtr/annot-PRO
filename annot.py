@@ -20,6 +20,7 @@ g_database = None
 g_save_name = ''
 g_default_backup_path = '/tmp/backup.txt'
 g_feature_autosave = False
+g_feature_debug = False
 def save_data(take_input = True):
     global g_save_name
     if take_input:
@@ -52,7 +53,7 @@ def toggle_autosave():
 
 g_extcmds = {'quit': exit, 'Q':  exit, 'save': save_data, 's': save_data, 'help': print_help, 'h': print_help,
              'auto': toggle_autosave, 'autosave': toggle_autosave}
-g_fndict = {'h': 'HEAD', 's': 'SBAR', 'n': 'NP', 'p': 'PP', 'v': 'VP', 'a': 'ADJP', 'f': 'ADVP',}
+g_fndict = {'h': None, 's': 'SBAR', 'n': 'NP', 'p': 'PP', 'v': 'VP', 'a': 'ADJP', 'f': 'ADVP',}
 
     
 def print_available_fns():
@@ -148,7 +149,6 @@ while cur_ix < len(g_database):
                 g_database[cur_ix] = g_database[cur_ix][:2]
                 skip = True
             else:
-
                 if '!' in cmd:
                     bang = True
                     cmd = cmd.replace('!', '')
@@ -190,8 +190,9 @@ while cur_ix < len(g_database):
                     print('Malformed command %s.' % cmd); continue
         except Exception:
             print('Illegal command: %s.' % cmd)
-            import traceback
-            traceback.print_exc()
+            if g_feature_debug:
+                import traceback
+                traceback.print_exc()
             annot='' ; continue
         if skip:
             break
@@ -200,8 +201,9 @@ while cur_ix < len(g_database):
         if yon != '' and yon != 'y':
             print('Rejected last annotation, try again.')
             annot = ''
-        annot = annot if rewritn is False else annot + '#'
-        annot = annot if rewritn is False else annot + '!'
+        if annot != '':
+            annot = annot if rewritn is False else annot + '#'
+            annot = annot if bang is False else annot + '!'
     if not skip:
         raw_data.append(annot) # note the side effect.
         cur_ix += 1
